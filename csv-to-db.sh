@@ -18,10 +18,14 @@ cut -d '#' -f1-4 web-server-access-log.txt > $extracted_file
 # transformed '#' to ','
 tr '#' ',' < $extracted_file > $transformed_file 
 
-echo 'input data to DB'
-# input to the database
-echo "\c template1; \COPY access_log FROM '$(pwd)/$transformed_file' DELIMITERS ',' CSV HEADER;" | psql --username=postgres --host=localhost
+echo 'create table in DB'
+# create table
+echo '\c template1; \\CREATE TABLE IF NOT EXISTS access_log (timestamp TIMESTAMP, latitude float, longitude float, visitor_id char(37));' | psql --username=postgres --host=localhost
 
+echo 'input data to table in DB'
+# input to the database
+echo '\c template1; \\DELETE FROM access_log' | psql --username=postgres --host=localhost
+echo "\c template1; \COPY access_log FROM '$(pwd)/$transformed_file' DELIMITERS ',' CSV HEADER;" | psql --username=postgres --host=localhost
 
 echo 'return database results'
 # print out the database
